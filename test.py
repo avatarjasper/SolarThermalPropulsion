@@ -20,3 +20,15 @@ print(Tc_act)
 from scipy.optimize import fsolve
 Tc_fsolve = fsolve(func, 3500)
 print(Tc_fsolve)
+
+
+
+
+vandenkerckhove = 0.67
+gamma = 1.33
+ae_at_ratio = 450
+
+def pe_pc_ratio_func(x):
+    return vandenkerckhove / np.sqrt( (2*gamma / (gamma-1)) * (x)**(2/gamma) * (1- (x)**((gamma-1)/gamma))) - ae_at_ratio
+pe_pc_ratio = fsolve(pe_pc_ratio_func, 0.000001)
+print(pe_pc_ratio)
