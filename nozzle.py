@@ -36,7 +36,8 @@ class Nozzle():
         self.nozzle_ultimate_strength = nozzle_ultimate_strength
         self.SF = SF
         self.nozzle_thickness = self.t_nozzle() 
-        self.nozzle_corrected = False
+        self.nozzle_corrected = "Thickness nozzle not too small to manufacture"
+        self.rt = np.sqrt(self.ae / np.pi)
 
     def t_nozzle(self):
         radius_throat = np.sqrt(self.at/np.pi)
@@ -52,9 +53,9 @@ class Nozzle():
         # left = self.nozzle_density * self.SF / self.nozzle_ultimate_strength # NO K_Loads
         # brackets = (self.at * ( (self.ae_at_ratio-1)/np.sin(self.divergence_angle) ) * ((self.pc * (radius_exit + radius_throat)) / 2)  )
         # return left * brackets
-        if self.nozzle_thickness <0.001:
-            self.nozzle_thickness = 0.001
-            self.nozzle_corrected = True
+        if self.nozzle_thickness < 0.005:
+            self.nozzle_thickness = 0.005
+            self.nozzle_corrected = "Thickness nozzle too small to manufacture, was made 5 mm, such that regenerative cooling can be used"
         return self.nozzle_thickness * area_lat * self.nozzle_density
     
 

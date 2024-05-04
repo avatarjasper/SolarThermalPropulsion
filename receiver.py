@@ -10,7 +10,7 @@ class Cone():
         self.thermal_cond = thermal_cond
         self.temp_max = temp_max
         self.t_channel = t_channel
-        self.thickness_outer = self.thickness_outer
+        self.thickness_outer = thickness_outer
 
         self.area_lateral = self.radius * np.pi * np.sqrt(self.radius**2 + self.length**2)
         self.volume = self.area_lateral * self.thickness

@@ -64,7 +64,7 @@ class Collector():
         mass_transmission = self.transmission_length * self.density_cable * area
         return mass_transmission
         
-    def mass_total(self)
+    def mass_total(self):
         return self.mass_total_collector() + self.mass_total_transmission()
 
 
