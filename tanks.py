@@ -30,8 +30,8 @@ class Tanks():
 
 
     # PROPELLANT
-    def tank_thickness(self, pc):
-        t = pc * self.tank_radius / self.yield_stress
+    def tank_thickness(self):
+        t = self.pc * self.tank_radius / self.yield_stress
         if t < 0.001:
             t = 0.001
         t = t * self.SF
@@ -39,10 +39,9 @@ class Tanks():
         return t 
     
     def total_mass_propellant_tank(self):
-        surface_area = 2*np.pi*self.tank_radius*self.tank_length + 4 * np.pi * self.tank_radius**2    
-        mass = self.tank_thickness(self.pc) * surface_area
-        self.propellant_tank_mass = mass
-        return mass
+        surface_area = 2*np.pi*self.tank_radius*self.tank_length + 4 * np.pi * self.tank_radius**2 
+        self.propellant_tank_mass = self.tank_thickness() * surface_area
+        return self.propellant_tank_mass
     
     
 
