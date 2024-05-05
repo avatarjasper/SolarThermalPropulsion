@@ -65,7 +65,8 @@ class Collector():
         return mass_transmission
         
     def mass_total(self):
-        return self.mass_total_collector() + self.mass_total_transmission()
+        self.total_mass_all = self.mass_total_collector() + self.mass_total_transmission()
+        return self.total_mass_all
 
 
 

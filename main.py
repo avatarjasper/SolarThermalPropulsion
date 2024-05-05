@@ -3,6 +3,9 @@ from receiver import Cone
 from collector import Collector
 from nozzle import Nozzle
 from tanks import Tanks
+import pandas as pd
+import os
+from tqdm import tqdm
 
 
 #RECEIVER
@@ -37,6 +40,12 @@ def check(Tc, Temp_max, cone_Mtotal, ae_at_rat, mass_prop, F, CR, nozzle_Mtotal,
         return False
     return True
 
+def dftocsv(df):
+    if os.path.isfile('gridsearch_results.csv'):
+        df.to_csv('gridsearch_results.csv', mode='a', header=False)
+    else:
+        df.to_csv('gridsearch_results.csv', mode='w', header=True)
+
 
 
 # AT = 8e-6
@@ -51,10 +60,14 @@ maxAE = np.pi * 0.1**2
 
 AT = np.linspace(minAT, maxAT, 100)
 AE = np.linspace(minAE, maxAE, 100)
+CR_INIT = 1000000000
+min_mass = float('inf')
+best_values = None
 
-for at in AT:
+
+for at in tqdm(AT):
     for ae in AE:
-
+    # while CR_INIT>13000:
         cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPIHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT_INIT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
 
         nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
@@ -65,17 +78,24 @@ for at in AT:
             MDOT = nozzle.m_dot
             cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPIHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
             nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
+        if MDOT- nozzle.m_dot < delta:
+            print('MDOT converged')
 
         #TRANSMISSION, COLLECTOR
         TRANSMISSION_EFFICIENCY = 0.8
         COLLECTOR_NUMBER = 5
-        TRANSMISSION_DIAMETER = 760e-6 # m
+        TRANSMISSION_DIAMETER = 5 * 760e-6 # m #for 19 cables 
         SOLAR_FLUX = 1361 # W/m^2
-        NUMBER_CABLES = 7 #random but from paper for now
+        NUMBER_CABLES = 19 #random but from paper for now
         LENGTH_TRANSMISSION = 0.5 #m assumption
         TRANSMISSION_DENSITY = 2650 #kg/m^3
 
         collector = Collector(cone.power_to_prop, TRANSMISSION_EFFICIENCY, COLLECTOR_NUMBER, TRANSMISSION_DIAMETER, SOLAR_FLUX, NUMBER_CABLES, LENGTH_TRANSMISSION, TRANSMISSION_DENSITY)
+        if collector.concentration_ratio > 13000:
+            print('CR too high')
+        # CR_INIT = collector.concentration_ratio
+        # if CR_INIT > 13000:
+            # T_MAX_GRAPHITE = T_MAX_GRAPHITE - 1
 
         # TANKS
         WATER_DENSITY = 1000 #kg
@@ -93,17 +113,7 @@ for at in AT:
         tanks = Tanks(nozzle.mp, WATER_DENSITY, TANK_YIELD_STRESS, TANK_DENSITY, TANK_SF, TANK_RADIUS, R_PRESSURANT_SPEC, STORAGE_TEMP, GAMMA_HELIUM, INITIAL_GUESS_PRESSURANT_PRESSURE, BOUNDS, nozzle.pc)
 
 
-        # print(cone.__dict__)
-        # print('\n')
-        # print(nozzle.__dict__)
-        # print('\n')
-        # print(collector.__dict__)
-        # print('\n')
-        # print(tanks.__dict__)
-        # print(cone.mass_total(nozzle.rt))
-        # print(nozzle.mass_total())
-        # print(collector.mass_total())
-        # print(tanks.total_mass())
+
         cone_mass_total = cone.mass_total(nozzle.rt)
         nozzle_mass_total = nozzle.mass_total()
         collector_mass_total = collector.mass_total()
@@ -112,8 +122,12 @@ for at in AT:
 
 
         if check(cone.Tc, T_MAX_GRAPHITE, cone_mass_total, nozzle.ae_at_ratio, nozzle.mp, nozzle.F_compl, collector.concentration_ratio, nozzle_mass_total, collector_mass_total, tanks_mass_total):
+            info = pd.DataFrame([cone.__dict__, nozzle.__dict__, collector.__dict__, tanks.__dict__, {'system_mass': system_mass}])
+            dftocsv(info)
+
+        if system_mass < min_mass:
+            min_mass = system_mass
+            best_values = {'at':at, 'ae':ae}
             
-            
-
-
-
+print(min_mass)
+print(best_values)

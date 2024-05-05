@@ -28,7 +28,8 @@ class Cone():
         return S_lat_outer * self.thickness_outer * self.density
     
     def mass_total(self, R_t):
-        return self.mass + self.mass_lateral_outer(R_t)
+        self.total_mass_all = self.mass + self.mass_lateral_outer(R_t)
+        return self.total_mass_all
     
     
     
