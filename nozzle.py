@@ -25,7 +25,7 @@ class Nozzle():
         self.mp = self.sc_mass_max  - self.sc_mass_max * (np.exp(-self.delta_v/self.Ue))
         self.m_dot = self.mp/self.time_burn
         self.pc = self.m_dot * np.sqrt(self.r * self.Tc) / (self.vandenkerckhove * self.at)
-        self.pe = self.pe_pc_ratio * self.pc
+        self.pe = self.pe_pc_ratio * self.pc    
 
         # self.Ue = np.sqrt((2*self.gamma*self.r*self.Tc/(self.gamma-1)) * (1 - (self.pe_pc_ratio)**((self.gamma-1)/self.gamma)))
         self.F_compl = self.m_dot * self.Ue + (self.pe) * self.ae

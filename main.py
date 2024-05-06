@@ -48,152 +48,159 @@ def dftocsv(df):
 ###########################
 #ITERATION FOR GRID SEARCH
 ###########################
-minAT = np.pi * 0.0005**2
-maxAT = np.pi * 0.05**2
+# minAT = np.pi * 0.0005**2
+# maxAT = np.pi * 0.05**2
 
-minAE = np.pi * 0.005**2 
-maxAE = np.pi * 0.1**2
+# minAE = np.pi * 0.005**2 
+# maxAE = np.pi * 0.1**2
+# print(minAT, maxAT, minAE, maxAE)
 
-AT = np.linspace(minAT, maxAT, 100)
-AE = np.linspace(minAE, maxAE, 100)
-CR_INIT = 1000000000
-min_mass = float('inf')
-best_values = None
-
-
-for at in tqdm(AT):
-    for ae in AE:
-    # while CR_INIT>13000:
-        cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT_INIT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
-
-        nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
-
-        MDOT = 0
-        delta = 0.00000001
-        while abs(MDOT - nozzle.m_dot) > delta:
-            MDOT = nozzle.m_dot
-            cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
-            nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
-        # if MDOT- nozzle.m_dot < delta:
-            # print('MDOT converged')
-
-        #TRANSMISSION, COLLECTOR
-        TRANSMISSION_EFFICIENCY = 0.8
-        COLLECTOR_NUMBER = 5
-        TRANSMISSION_DIAMETER = 5 * 760e-6 # m #for 19 cables 
-        SOLAR_FLUX = 1361 # W/m^2
-        NUMBER_CABLES = 19 #random but from paper for now
-        LENGTH_TRANSMISSION = 0.5 #m assumption
-        TRANSMISSION_DENSITY = 2650 #kg/m^3
-
-        collector = Collector(cone.power_to_prop, TRANSMISSION_EFFICIENCY, COLLECTOR_NUMBER, TRANSMISSION_DIAMETER, SOLAR_FLUX, NUMBER_CABLES, LENGTH_TRANSMISSION, TRANSMISSION_DENSITY)
-        if collector.concentration_ratio > 13000:
-            print('CR too high')
-        # CR_INIT = collector.concentration_ratio
-        # if CR_INIT > 13000:
-            # T_MAX_GRAPHITE = T_MAX_GRAPHITE - 1
-
-        # TANKS
-        WATER_DENSITY = 1000 #kg
-        TANK_YIELD_STRESS = 90e6 # Pa
-        TANK_DENSITY = 2700 # kg/m^3
-        TANK_SF = 2
-        TANK_RADIUS = 0.05 #m , = 1 cm
-        M_HELIUM = 4.002602e-3 # kg/mol
-        R_PRESSURANT_SPEC = RA/M_HELIUM
-        GAMMA_HELIUM = 1.66
-        INITIAL_GUESS_PRESSURANT_PRESSURE = nozzle.pc + 1
-        BOUNDS = [(nozzle.pc, 300e5)]
+# AT = np.linspace(minAT, maxAT, 100)
+# AE = np.linspace(minAE, maxAE, 100)
+# min_mass = float('inf')
+# best_values = None
 
 
-        tanks = Tanks(nozzle.mp, WATER_DENSITY, TANK_YIELD_STRESS, TANK_DENSITY, TANK_SF, TANK_RADIUS, R_PRESSURANT_SPEC, STORAGE_TEMP, GAMMA_HELIUM, INITIAL_GUESS_PRESSURANT_PRESSURE, BOUNDS, nozzle.pc)
+# for at in tqdm(AT):
+#     for ae in AE:
+#     # while CR_INIT>13000:
+#         cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT_INIT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
+
+#         nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
+
+#         MDOT = 0
+#         delta = 0.00000001
+#         while abs(MDOT - nozzle.m_dot) > delta:
+#             MDOT = nozzle.m_dot
+#             cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
+#             nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
+#         # if MDOT- nozzle.m_dot < delta:
+#             # print('MDOT converged')
+
+#         #TRANSMISSION, COLLECTOR
+#         TRANSMISSION_EFFICIENCY = 0.6
+#         COLLECTOR_NUMBER = 5
+#         TRANSMISSION_DIAMETER = 5 * 760e-6 # m #for 19 cables 
+#         SOLAR_FLUX = 1361 # W/m^2
+#         NUMBER_CABLES = 19 #random but from paper for now
+#         LENGTH_TRANSMISSION = 0.5 #m assumption
+#         TRANSMISSION_DENSITY = 2650 #kg/m^3
+
+#         collector = Collector(cone.power_to_prop, TRANSMISSION_EFFICIENCY, COLLECTOR_NUMBER, TRANSMISSION_DIAMETER, SOLAR_FLUX, NUMBER_CABLES, LENGTH_TRANSMISSION, TRANSMISSION_DENSITY)
+
+#         # TANKS
+#         WATER_DENSITY = 1000 #kg
+#         TANK_YIELD_STRESS = 90e6 # Pa
+#         TANK_DENSITY = 2700 # kg/m^3
+#         TANK_SF = 2
+#         TANK_RADIUS = 0.05 #m , = 1 cm
+#         M_HELIUM = 4.002602e-3 # kg/mol
+#         R_PRESSURANT_SPEC = RA/M_HELIUM
+#         GAMMA_HELIUM = 1.66
+#         INITIAL_GUESS_PRESSURANT_PRESSURE = nozzle.pc + 1
+#         BOUNDS = [(nozzle.pc, 300e5)]
+
+
+#         tanks = Tanks(nozzle.mp, WATER_DENSITY, TANK_YIELD_STRESS, TANK_DENSITY, TANK_SF, TANK_RADIUS, R_PRESSURANT_SPEC, STORAGE_TEMP, GAMMA_HELIUM, INITIAL_GUESS_PRESSURANT_PRESSURE, BOUNDS, nozzle.pc)
 
 
 
-        cone_mass_total = cone.mass_total(nozzle.rt)
-        nozzle_mass_total = nozzle.mass_total()
-        collector_mass_total = collector.mass_total()
-        tanks_mass_total = tanks.total_mass()
-        system_mass = cone_mass_total + nozzle_mass_total + collector_mass_total + tanks_mass_total
+#         cone_mass_total = cone.mass_total(nozzle.rt)
+#         nozzle_mass_total = nozzle.mass_total()
+#         collector_mass_total = collector.mass_total()
+#         tanks_mass_total = tanks.total_mass()
+#         system_mass = cone_mass_total + nozzle_mass_total + collector_mass_total + tanks_mass_total
 
 
-        if check(cone.Tc, T_MAX_GRAPHITE, cone_mass_total, nozzle.ae_at_ratio, nozzle.mp, nozzle.F_compl, collector.concentration_ratio, nozzle_mass_total, collector_mass_total, tanks_mass_total):
-            info = pd.DataFrame([cone.__dict__, nozzle.__dict__, collector.__dict__, tanks.__dict__, {'system_mass': system_mass}])
-            dftocsv(info)
-            if system_mass < min_mass:
-                min_mass = system_mass
-                best_values = {'at':at, 'ae':ae}
+#         if check(cone.Tc, T_MAX_GRAPHITE, cone_mass_total, nozzle.ae_at_ratio, nozzle.mp, nozzle.F_compl, collector.concentration_ratio, nozzle_mass_total, collector_mass_total, tanks_mass_total):
+#             info = pd.DataFrame([cone.__dict__, nozzle.__dict__, collector.__dict__, tanks.__dict__, {'system_mass': system_mass}])
+#             dftocsv(info)
+#             if system_mass < min_mass:
+#                 min_mass = system_mass
+#                 best_values = {'at':at, 'ae':ae}
             
-print(min_mass)
-print(best_values)
-print(nozzle.ae_at_ratio)
-print(cone.Tc)
+# print(min_mass)
+# print(best_values)
+# print(nozzle.ae_at_ratio)
+# print(cone.Tc)
+
+
+
 
 #################################
 #BEST VALUES FROM GRID SEARCH
 #################################
-at = 0.007853981633974483
-ae = 7.853981633974483e-05
+at = 8.011061266653972e-05
+ae = 0.0029273931544813976
 
+cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT_INIT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
 
-# cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT_INIT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
+nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
 
-# nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
-
-# MDOT = 0
-# delta = 0.00000001
-# while abs(MDOT - nozzle.m_dot) > delta:
-#     MDOT = nozzle.m_dot
-#     cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
-#     nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
+MDOT = 0
+delta = 0.00000001
+while abs(MDOT - nozzle.m_dot) > delta:
+    MDOT = nozzle.m_dot
+    cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
+    nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
 # if MDOT- nozzle.m_dot < delta:
-#     print('MDOT converged')
+    # print('MDOT converged')
 
-# #TRANSMISSION, COLLECTOR
-# TRANSMISSION_EFFICIENCY = 0.8
-# COLLECTOR_NUMBER = 5
-# TRANSMISSION_DIAMETER = 5 * 760e-6 # m #for 19 cables 
-# SOLAR_FLUX = 1361 # W/m^2
-# NUMBER_CABLES = 19 #random but from paper for now
-# LENGTH_TRANSMISSION = 0.5 #m assumption
-# TRANSMISSION_DENSITY = 2650 #kg/m^3
+#TRANSMISSION, COLLECTOR
+TRANSMISSION_EFFICIENCY = 0.6
+COLLECTOR_NUMBER = 5
+TRANSMISSION_DIAMETER = 5 * 760e-6 # m #for 19 cables 
+SOLAR_FLUX = 1361 # W/m^2
+NUMBER_CABLES = 19 #random but from paper for now
+LENGTH_TRANSMISSION = 0.5 #m assumption
+TRANSMISSION_DENSITY = 2650 #kg/m^3
 
-# collector = Collector(cone.power_to_prop, TRANSMISSION_EFFICIENCY, COLLECTOR_NUMBER, TRANSMISSION_DIAMETER, SOLAR_FLUX, NUMBER_CABLES, LENGTH_TRANSMISSION, TRANSMISSION_DENSITY)
-# if collector.concentration_ratio > 13000:
-#     print('CR too high')
-# # CR_INIT = collector.concentration_ratio
-# # if CR_INIT > 13000:
-#     # T_MAX_GRAPHITE = T_MAX_GRAPHITE - 1
+collector = Collector(cone.power_to_prop, TRANSMISSION_EFFICIENCY, COLLECTOR_NUMBER, TRANSMISSION_DIAMETER, SOLAR_FLUX, NUMBER_CABLES, LENGTH_TRANSMISSION, TRANSMISSION_DENSITY)
 
-# # TANKS
-# WATER_DENSITY = 1000 #kg
-# TANK_YIELD_STRESS = 90e6 # Pa
-# TANK_DENSITY = 2700 # kg/m^3
-# TANK_SF = 2
-# TANK_RADIUS = 0.05 #m , = 1 cm
-# M_HELIUM = 4.002602e-3 # kg/mol
-# R_PRESSURANT_SPEC = RA/M_HELIUM
-# GAMMA_HELIUM = 1.66
-# INITIAL_GUESS_PRESSURANT_PRESSURE = nozzle.pc + 1
-# BOUNDS = [(nozzle.pc, 300e5)]
+# TANKS
+WATER_DENSITY = 1000 #kg
+TANK_YIELD_STRESS = 90e6 # Pa
+TANK_DENSITY = 2700 # kg/m^3
+TANK_SF = 2
+TANK_RADIUS = 0.05 #m , = 1 cm
+M_HELIUM = 4.002602e-3 # kg/mol
+R_PRESSURANT_SPEC = RA/M_HELIUM
+GAMMA_HELIUM = 1.66
+INITIAL_GUESS_PRESSURANT_PRESSURE = nozzle.pc + 1
+BOUNDS = [(nozzle.pc, 300e5)]
 
 
-# tanks = Tanks(nozzle.mp, WATER_DENSITY, TANK_YIELD_STRESS, TANK_DENSITY, TANK_SF, TANK_RADIUS, R_PRESSURANT_SPEC, STORAGE_TEMP, GAMMA_HELIUM, INITIAL_GUESS_PRESSURANT_PRESSURE, BOUNDS, nozzle.pc)
+tanks = Tanks(nozzle.mp, WATER_DENSITY, TANK_YIELD_STRESS, TANK_DENSITY, TANK_SF, TANK_RADIUS, R_PRESSURANT_SPEC, STORAGE_TEMP, GAMMA_HELIUM, INITIAL_GUESS_PRESSURANT_PRESSURE, BOUNDS, nozzle.pc)
+
+cone_mass_total = cone.mass_total(nozzle.rt)
+nozzle_mass_total = nozzle.mass_total()
+collector_mass_total = collector.mass_total()
+tanks_mass_total = tanks.total_mass()
+system_mass = cone_mass_total + nozzle_mass_total + collector_mass_total + tanks_mass_total
+
+print(cone.__dict__)
+print(f'{cone.mass_lateral_outer(nozzle.rt)=}')
+print(f'{cone.mass_lateral_outer(nozzle.rt)/cone.density=}')
+
+print('\n')
+print(nozzle.__dict__)
+
+print(f'{np.sqrt(at/np.pi)=}')
+print(f'{np.sqrt(ae/np.pi)=}')
 
 
 
-# cone_mass_total = cone.mass_total(nozzle.rt)
-# nozzle_mass_total = nozzle.mass_total()
-# collector_mass_total = collector.mass_total()
-# tanks_mass_total = tanks.total_mass()
-# system_mass = cone_mass_total + nozzle_mass_total + collector_mass_total + tanks_mass_total
 
 
-# print(cone.__dict__)
-# print('\n')
-# print(nozzle.__dict__)
-# print('\n')
-# print(collector.__dict__)
-# print('\n')
-# print(tanks.__dict__)
+print('\n')
+print(collector.__dict__)
+print(collector.mass_parabolic())
+print(collector.collector)
+print(collector.collector_area)
+print(collector.collector_diameter)
+print('\n')
+print(tanks.__dict__)
 
+
+
+print(system_mass)

@@ -1,0 +1,22 @@
+digraph "packages" {
+rankdir=BT
+charset="utf-8"
+"code" [color="black", label=<code>, shape="box", style="solid"];
+"code.arch" [color="black", label=<code.arch>, shape="box", style="solid"];
+"code.collector" [color="black", label=<code.collector>, shape="box", style="solid"];
+"code.main" [color="black", label=<code.main>, shape="box", style="solid"];
+"code.nozzle" [color="black", label=<code.nozzle>, shape="box", style="solid"];
+"code.nozzle_copy" [color="black", label=<code.nozzle_copy>, shape="box", style="solid"];
+"code.receiver" [color="black", label=<code.receiver>, shape="box", style="solid"];
+"code.tanks" [color="black", label=<code.tanks>, shape="box", style="solid"];
+"code.test_OLD" [color="black", label=<code.test_OLD>, shape="box", style="solid"];
+"code.tests" [color="black", label=<code.tests>, shape="box", style="solid"];
+"code.main" -> "code.collector" [arrowhead="open", arrowtail="none"];
+"code.main" -> "code.nozzle" [arrowhead="open", arrowtail="none"];
+"code.main" -> "code.receiver" [arrowhead="open", arrowtail="none"];
+"code.main" -> "code.tanks" [arrowhead="open", arrowtail="none"];
+"code.tests" -> "code.collector" [arrowhead="open", arrowtail="none"];
+"code.tests" -> "code.nozzle" [arrowhead="open", arrowtail="none"];
+"code.tests" -> "code.receiver" [arrowhead="open", arrowtail="none"];
+"code.tests" -> "code.tanks" [arrowhead="open", arrowtail="none"];
+}

@@ -23,27 +23,28 @@ class Collector():
         density = 1213  # kg/m^3  from 6fda-apb
         thickness = 0.002 # m
         structure_density = 2800 # kg/m^3 from aluminium
-        structure_thickness = 0.02 # m
-        return (self.collector_area * thickness * density + self.collector_area*structure_density*structure_thickness) * 1.2 # 1.2 for the cassegrain configuration and parabolic is harder to manufacture.
+        structure_thickness = 0.005 # m
+        return ((self.collector_area * thickness * density + self.collector_area*structure_density*structure_thickness) * 1.2) * self.collector_number # 1.2 for the cassegrain configuration and parabolic is harder to manufacture.
     
 
     def mass_fresnel(self):
         density = 1420 # kg/m^3  from kapton 300 jp film
         thickness = 0.002 # m
-        return self.collector_area * thickness * density * 2 # 2 for the struts
+        return (self.collector_area * thickness * density * 2) * self.collector_number # 2 for the struts
     
     def mass_spherical(self):
         density = 1213  # kg/m^3  from 6fda-apb
         thickness = 0.002 # m
         structure_density = 2800 # kg/m^3 from aluminium
         structure_thickness = 0.02 # m
-        return (self.collector_area * thickness * density + self.collector_area*structure_density*structure_thickness) * 1.1 # 1.1 for the cassegrain configuration.
+        return ((self.collector_area * thickness * density + self.collector_area*structure_density*structure_thickness) * 1.1)* self.collector_number # 1.1 for the cassegrain configuration.
     
 
     def mass_total_collector(self):
-        if self.concentration_ratio > 1500:
+        if self.concentration_ratio > 1000:
+            self.collector = 'parabolic'
             return self.mass_parabolic()
-        if (self.concentration_ratio <= 1500) and (self.concentration_ratio > 150):
+        if (self.concentration_ratio <= 1000) and (self.concentration_ratio > 150):
             if self.mass_fresnel() < self.mass_parabolic():
                 self.collector = 'fresnel'
                 return self.mass_fresnel()
@@ -62,7 +63,7 @@ class Collector():
     def mass_total_transmission(self):
         area = np.pi * (self.transmission_diameter_bundle/2)**2
         mass_transmission = self.transmission_length * self.density_cable * area
-        return mass_transmission
+        return mass_transmission * self.collector_number
         
     def mass_total(self):
         self.total_mass_all = self.mass_total_collector() + self.mass_total_transmission()
