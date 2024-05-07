@@ -53,6 +53,9 @@ class Nozzle():
 
     def mass_total(self):
         area_lat = self.at * ( (self.ae_at_ratio-1)/np.sin(self.divergence_angle) )
+        radius_throat = np.sqrt(self.at/np.pi)
+        radius_exit = np.sqrt(self.ae/np.pi)
+        self.length_nozzle = (radius_exit - radius_throat) / np.tan(self.divergence_angle)
         self.total_mass_all = self.nozzle_thickness * area_lat * self.nozzle_density
         return self.total_mass_all
     

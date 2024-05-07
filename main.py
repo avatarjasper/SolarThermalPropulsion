@@ -197,10 +197,13 @@ print(collector.__dict__)
 print(collector.mass_parabolic())
 print(collector.collector)
 print(collector.collector_area)
-print(collector.collector_diameter)
+print(collector.collector_radius)
 print('\n')
 print(tanks.__dict__)
 
+V_chamber = np.pi * cone.radius**2 * cone.length * 1/3 - np.pi * (cone.radius + cone.thickness + cone.t_channel + cone.thickness_outer - nozzle.rt)**2 * cone.length * 1/3
+c_star = nozzle.pc * nozzle.at / nozzle.m_dot
 
-
+tau = V_chamber / (nozzle.at * c_star * nozzle.vandenkerckhove**2)
+print(f'{tau=}')
 print(system_mass)

@@ -13,7 +13,7 @@ class Collector():
         self.flux_in_transmission_bundle = self.power_to_transmission_each_bundle/(np.pi * (self.transmission_diameter_bundle/2)**2)
         self.concentration_ratio = self.flux_in_transmission_bundle/self.solar_flux
         self.collector_area = self.concentration_ratio * np.pi * (self.transmission_diameter_bundle/2)**2
-        self.collector_diameter = np.sqrt(self.collector_area/np.pi)
+        self.collector_radius = np.sqrt(self.collector_area/np.pi)
 
         self.number_of_cables = number_of_cables
         self.transmission_length = transmission_length
