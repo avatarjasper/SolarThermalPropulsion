@@ -27,7 +27,6 @@ class Nozzle():
         self.pc = self.m_dot * np.sqrt(self.r * self.Tc) / (self.vandenkerckhove * self.at)
         self.pe = self.pe_pc_ratio * self.pc    
 
-        # self.Ue = np.sqrt((2*self.gamma*self.r*self.Tc/(self.gamma-1)) * (1 - (self.pe_pc_ratio)**((self.gamma-1)/self.gamma)))
         self.F_compl = self.m_dot * self.Ue + (self.pe) * self.ae
         self.tbit = 0.2 / self.F_compl  # 200mNs = Ft * tbit
         self.divergence_angle = divergence_angle

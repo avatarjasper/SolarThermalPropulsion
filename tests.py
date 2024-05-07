@@ -9,7 +9,6 @@ class TestReceiver(unittest.TestCase):
     def setUp(self):
         self.cone = Cone(0.5, 1, 0.002, 2250, 707, 24, 3500, 0.0001, 300, 0.005, 0.01)
         self.rt = 0.001
-
     def test_area_lateral(self):
         self.assertAlmostEqual(self.cone.area_lateral, 1.756203683, 5, "Later area is not correct")
     def test_volume(self):

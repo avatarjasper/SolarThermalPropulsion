@@ -15,18 +15,13 @@ class Tanks():
         self.pc = pc    
         
 
-        # get radius sphere? then see if sphere is too large, if so, get cylinder, assume a length?, for thickness use hoop stress
 
         self.yield_stress = yield_stress
         self.SF = SF
         self.tank_density = tank_density
         self.tank_radius = tank_radius
-
-        # put a check for sphere or cylinder
-        self.tank_length = (self.propellant_volume - ((4/3) * np.pi * self.tank_radius**3)) / (np.pi * self.tank_radius** 2) # THIS ALREADY ASSUMES CYLINDER...
+        self.tank_length = (self.propellant_volume - ((4/3) * np.pi * self.tank_radius**3)) / (np.pi * self.tank_radius** 2) 
         self.total_tank_length = self.tank_length + 2 * self.tank_radius
-
-
 
 
     # PROPELLANT
@@ -54,7 +49,6 @@ class Tanks():
         result = minimize(self.pressurant_mass_obj_func, self.init_guess, bounds=self.bounds)
         self.initial_pressurization_tank_pressure = result.x[0]
         self.mass_pressurant = result.fun
-        # self.pressurant_density = self.initial_pressurization_tank_pressure / (self.R_spec_press * self.T_press_initial)
         self.pressurant_density = 0.1598
         self.pressurant_volume = self.mass_pressurant / self.pressurant_density
         self.pressurant_tank_radius =  ((3/(4* np.pi))  * self.pressurant_volume)**(1/3)
