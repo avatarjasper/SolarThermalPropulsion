@@ -1,8 +1,6 @@
 import numpy as np
 from scipy.optimize import fsolve
 
-
-
 class Nozzle():
     def __init__(self, delta_v, sc_mass_max, gamma, ra, m, time_burn, at, ae, Tc, divergence_angle, nozzle_density, nozzle_ultimate_strength, SF):
         self.delta_v = delta_v

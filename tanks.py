@@ -6,8 +6,6 @@ class Tanks():
         self.propellant_mass = propellant_mass
         self.propellant_density = propellant_density
         self.propellant_volume = propellant_mass / (0.9* propellant_density)  # 10 % ullage
-        # R_spec_water = 8.314462 / 0.01801528
-        # self.propellant_volume = propellant_mass * R_spec_water * T_press_initial / pc
 
         self.R_spec_press = R_spec_press
         self.T_press_initial = T_press_initial
@@ -39,8 +37,6 @@ class Tanks():
         surface_area = 2*np.pi*self.tank_radius*self.tank_length + 4 * np.pi * self.tank_radius**2 
         self.propellant_tank_mass = self.tank_thickness() * surface_area * self.tank_density
         return self.propellant_tank_mass
-    
-    
 
     # PRESSURANT
     def pressurant_mass_obj_func(self, po):
@@ -79,8 +75,6 @@ class Tanks():
         self.total_mass_pressurant_tank()
         self.total_mass_all = self.propellant_tank_mass + self.pressurant_tank_mass + self.mass_pressurant + self.propellant_mass
         return self.total_mass_all
-    
-
 
     def total_mass_blow_down(self, _ratio):
         R = _ratio 
@@ -105,10 +99,3 @@ class Tanks():
         self.tank_mass_blow_down = surface_area * thickness *self.tank_density
         self.total_mass_blowdown = self.tank_mass_blow_down + total_mass_gas_blow_down 
         return self.total_mass_blowdown
-
-
-    
-    
-    
-    
-    

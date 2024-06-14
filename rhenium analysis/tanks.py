@@ -6,8 +6,6 @@ class Tanks():
         self.propellant_mass = propellant_mass
         self.propellant_density = propellant_density
         self.propellant_volume = propellant_mass / (0.9* propellant_density)  # 10 % ullage
-        # R_spec_water = 8.314462 / 0.01801528
-        # self.propellant_volume = propellant_mass * R_spec_water * T_press_initial / pc
 
         self.R_spec_press = R_spec_press
         self.T_press_initial = T_press_initial

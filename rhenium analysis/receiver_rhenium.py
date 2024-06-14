@@ -30,6 +30,3 @@ class Cone():
         self.total_mass_all = self.mass + self.mass_lateral_outer(R_t)
         return self.total_mass_all
     
-    
-
-
