@@ -31,5 +31,3 @@ class Cone():
         return self.total_mass_all
     
     
-
-

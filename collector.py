@@ -67,31 +67,3 @@ class Collector():
     def mass_total(self):
         self.total_mass_all = self.mass_total_collector() + self.mass_total_transmission()
         return self.total_mass_all
-
-
-
-
-# TRANSMISSION_EFFICIENCY = 0.8
-
-# COLLECTOR_NUMBER = 5
-
-
-# sf_to_transmission_each = sf_to_receiver/(TRANSMISSION_EFFICIENCY*COLLECTOR_NUMBER)
-# print(f'{sf_to_transmission_each=}')
-
-
-# TRANSMISSION_DIAMETER = 760e-6 # m
-# TRANSMISSION_CORE_AREA = np.pi * (TRANSMISSION_DIAMETER/2)**2
-# print(TRANSMISSION_CORE_AREA)
-
-# SOLAR_FLUX = 1361 # W/m^2
-
-
-# concentration_ratio = sf_to_transmission_each/SOLAR_FLUX
-
-# collector_area = TRANSMISSION_CORE_AREA * concentration_ratio
-# print(f'{collector_area=}')
-# print(np.sqrt(collector_area/np.pi))
-# print(np.sqrt(collector_area/np.pi))
-# print(concentration_ratio) 
-

@@ -70,43 +70,37 @@ def iteration(_at, _ae, _mdot_init):
 ###########################
 #ITERATION FOR GRID SEARCH: uncomment this whole thing and comment the best values part to run the grid search
 ###########################
-# MIN_AT = np.pi * 0.0005**2
-# MAX_AT = np.pi * 0.05**2
+MIN_AT = np.pi * 0.0005**2
+MAX_AT = np.pi * 0.05**2
 
-# MIN_AE = np.pi * 0.005**2 
-# MAX_AE = np.pi * 0.1**2
+MIN_AE = np.pi * 0.005**2 
+MAX_AE = np.pi * 0.1**2
 
-# AT = np.linspace(MIN_AT, MAX_AT, 100)
-# AE = np.linspace(MIN_AE, MAX_AE, 100)
-# min_mass = float('inf')
-# best_values = None
+AT = np.linspace(MIN_AT, MAX_AT, 100)
+AE = np.linspace(MIN_AE, MAX_AE, 100)
+min_mass = float('inf')
+best_values = None
 
 
-# for at in tqdm(AT):
-#     for ae in AE:
-#         cone, nozzle, collector, tanks = iteration(at, ae, MDOT_INIT)
+for at in tqdm(AT):
+    for ae in AE:
+        cone, nozzle, collector, tanks = iteration(at, ae, MDOT_INIT)
 
-#         cone_mass_total = cone.mass_total(nozzle.rt)
-#         nozzle_mass_total = nozzle.mass_total()
-#         collector_mass_total = collector.mass_total()
-#         tanks_mass_total = tanks.total_mass_blow_down(RATIO_BLOW_DOWN)
-#         system_mass = cone_mass_total + nozzle_mass_total + collector_mass_total + tanks_mass_total
+        cone_mass_total = cone.mass_total(nozzle.rt)
+        nozzle_mass_total = nozzle.mass_total()
+        collector_mass_total = collector.mass_total()
+        tanks_mass_total = tanks.total_mass_blow_down(RATIO_BLOW_DOWN)
+        system_mass = cone_mass_total + nozzle_mass_total + collector_mass_total + tanks_mass_total
 
-#         if check(cone.Tc, T_MAX_GRAPHITE, cone_mass_total, nozzle.ae_at_ratio, nozzle.mp, nozzle.F_compl, collector.concentration_ratio, nozzle_mass_total, collector_mass_total, tanks_mass_total):
-#             info = pd.DataFrame([cone.__dict__, nozzle.__dict__, collector.__dict__, tanks.__dict__, {'system_mass': system_mass}])
-#             dftocsv(info)
-#             if system_mass < min_mass:
-#                 min_mass = system_mass
-#                 best_values = {'at':at, 'ae':ae}
+        if check(cone.Tc, T_MAX_GRAPHITE, cone_mass_total, nozzle.ae_at_ratio, nozzle.mp, nozzle.F_compl, collector.concentration_ratio, nozzle_mass_total, collector_mass_total, tanks_mass_total):
+            info = pd.DataFrame([cone.__dict__, nozzle.__dict__, collector.__dict__, tanks.__dict__, {'system_mass': system_mass}])
+            dftocsv(info)
+            if system_mass < min_mass:
+                min_mass = system_mass
+                best_values = {'at':at, 'ae':ae}
             
-# print(min_mass)
-# print(best_values)
-# print(cone_mass_total)
-# print(nozzle_mass_total)
-# print(collector_mass_total)
-# print(tanks_mass_total)
-
-# print(tanks.__dict__)
+print(min_mass)
+print(best_values)
 
 
 ################################
@@ -149,10 +143,6 @@ print(f'{radius_exit=}')
 
 print('\n')
 print(collector.__dict__)
-print(collector.mass_parabolic())
-print(collector.collector)
-print(collector.collector_area)
-print(collector.collector_radius)
 print('\n')
 print(tanks.__dict__)
 
@@ -178,89 +168,88 @@ print(system_mass)
 ###############################
 #Plots for changing the dimensions of the cone. Uncomment this whole thing to run the plots: note that at and ae need to be specified.
 ###############################
-# radius_list = np.linspace(5*TRANSMISSION_DIAMETER, 0.1, 100)
-# length_list = np.linspace(0.025, 0.15, 100)
-# thickness_list = np.linspace(0.001, 0.02, 100)
-# Tc_list = np.zeros(len(radius_list)) 
+radius_list = np.linspace(5*TRANSMISSION_DIAMETER, 0.1, 100)
+length_list = np.linspace(0.025, 0.15, 100)
+thickness_list = np.linspace(0.001, 0.02, 100)
+Tc_list = np.zeros(len(radius_list)) 
 
-# for i in range(len(radius_list)):
-#     cone_params = default_cone_params.copy()
-#     cone_params['mdot'] = MDOT_INIT
-#     cone_params['radius'] = radius_list[i]
+for i in range(len(radius_list)):
+    cone_params = default_cone_params.copy()
+    cone_params['mdot'] = MDOT_INIT
+    cone_params['radius'] = radius_list[i]
     
-#     cone = Cone(**cone_params)
+    cone = Cone(**cone_params)
 
 
-#     nozzle_params = default_nozzle_params.copy()
-#     nozzle_params['at'] = at
-#     nozzle_params['ae'] = ae
-#     nozzle_params['Tc'] = cone.Tc
+    nozzle_params = default_nozzle_params.copy()
+    nozzle_params['at'] = at
+    nozzle_params['ae'] = ae
+    nozzle_params['Tc'] = cone.Tc
 
-#     nozzle = Nozzle(**nozzle_params)
+    nozzle = Nozzle(**nozzle_params)
 
-#     MDOT = 0
-#     delta = 0.00000001
-#     while abs(MDOT - nozzle.m_dot) > delta:
-#         MDOT = nozzle.m_dot
-#         cone_params = default_cone_params.copy()
-#         cone_params['mdot'] = MDOT
-#         cone = Cone(**cone_params)
+    MDOT = 0
+    delta = 0.00000001
+    while abs(MDOT - nozzle.m_dot) > delta:
+        MDOT = nozzle.m_dot
+        cone_params = default_cone_params.copy()
+        cone_params['mdot'] = MDOT
+        cone = Cone(**cone_params)
 
-#         nozzle_params = default_nozzle_params.copy()
-#         nozzle_params['at'] = at
-#         nozzle_params['ae'] = ae
-#         nozzle_params['Tc'] = cone.Tc
-#         nozzle = Nozzle(**nozzle_params)
+        nozzle_params = default_nozzle_params.copy()
+        nozzle_params['at'] = at
+        nozzle_params['ae'] = ae
+        nozzle_params['Tc'] = cone.Tc
+        nozzle = Nozzle(**nozzle_params)
     
-#     Tc_list[i] = cone.Tc
+    Tc_list[i] = cone.Tc
 
-# plt.xlabel('Radius [m]')
-# plt.ylabel('$T_c$ [K]')
-# plt.plot(radius_list, Tc_list, label='Tc vs Radius')
-# plt.axvline(x=0.05, color='r', linestyle='--', label='Radius = 0.05')
-# plt.legend()
-# plt.savefig('Tc_vs_Radius.png')
-# # plt.ticklabel_format(useOffset=False)
-# plt.show()
+plt.xlabel('Radius [m]')
+plt.ylabel('$T_c$ [K]')
+plt.plot(radius_list, Tc_list, label='Tc vs Radius')
+plt.axvline(x=0.05, color='r', linestyle='--', label='Radius = 0.05')
+plt.legend()
+plt.savefig('Tc_vs_Radius.png')
+# plt.ticklabel_format(useOffset=False)
+plt.show()
 
 
-# for i in range(len(length_list)):
-#     cone_params = default_cone_params.copy()
-#     cone_params['mdot'] = MDOT_INIT
-#     cone_params['length'] = length_list[i]
+for i in range(len(length_list)):
+    cone_params = default_cone_params.copy()
+    cone_params['mdot'] = MDOT_INIT
+    cone_params['length'] = length_list[i]
     
-#     cone = Cone(**cone_params)
+    cone = Cone(**cone_params)
 
 
-#     nozzle_params = default_nozzle_params.copy()
-#     nozzle_params['at'] = at
-#     nozzle_params['ae'] = ae
-#     nozzle_params['Tc'] = cone.Tc
+    nozzle_params = default_nozzle_params.copy()
+    nozzle_params['at'] = at
+    nozzle_params['ae'] = ae
+    nozzle_params['Tc'] = cone.Tc
 
-#     nozzle = Nozzle(**nozzle_params)
+    nozzle = Nozzle(**nozzle_params)
 
-#     MDOT = 0
-#     delta = 0.00000001
-#     while abs(MDOT - nozzle.m_dot) > delta:
-#         MDOT = nozzle.m_dot
-#         cone_params = default_cone_params.copy()
-#         cone_params['mdot'] = MDOT
-#         cone = Cone(**cone_params)
+    MDOT = 0
+    delta = 0.00000001
+    while abs(MDOT - nozzle.m_dot) > delta:
+        MDOT = nozzle.m_dot
+        cone_params = default_cone_params.copy()
+        cone_params['mdot'] = MDOT
+        cone = Cone(**cone_params)
 
-#         nozzle_params = default_nozzle_params.copy()
-#         nozzle_params['at'] = at
-#         nozzle_params['ae'] = ae
-#         nozzle_params['Tc'] = cone.Tc
-#         nozzle = Nozzle(**nozzle_params)
+        nozzle_params = default_nozzle_params.copy()
+        nozzle_params['at'] = at
+        nozzle_params['ae'] = ae
+        nozzle_params['Tc'] = cone.Tc
+        nozzle = Nozzle(**nozzle_params)
     
-#     Tc_list[i] = cone.Tc
+    Tc_list[i] = cone.Tc
 
-# plt.xlabel('Length [m]')
-# plt.ylabel('$T_c$ [K]')
-# plt.plot(length_list, Tc_list, label='Tc vs Length')
-# plt.axvline(x=0.075, color='r', linestyle='--', label='Length = 0.075')
-# plt.legend()
-# plt.savefig('Tc_vs_Length.png')
-# # plt.ticklabel_format(useOffset=False)
-# plt.show()
-
+plt.xlabel('Length [m]')
+plt.ylabel('$T_c$ [K]')
+plt.plot(length_list, Tc_list, label='Tc vs Length')
+plt.axvline(x=0.075, color='r', linestyle='--', label='Length = 0.075')
+plt.legend()
+plt.savefig('Tc_vs_Length.png')
+# plt.ticklabel_format(useOffset=False)
+plt.show()
