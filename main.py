@@ -6,108 +6,91 @@ from tanks import Tanks
 import pandas as pd
 import os
 from tqdm import tqdm
-
-
-#RECEIVER
-CONE_RADIUS = 0.05 # m
-CONE_LENGTH = 0.075 # m
-CONE_THICKNESS = 0.002 # m
-GRAPHITE_DENSITY = 2250 # kg/m^3
-GRAPHITE_C_P = 707.7 # J/kgK
-GRAPHITE_THERMAL_CONDUCTIVITY = 24.0 # W/mK
-T_MAX_GRAPHITE = 3500 # K
-MDOT_INIT = 5.141931363082546e-05 # kg/s
-STORAGE_TEMP = 300 # K
-CHANNEL_THICKNESS = 0.005 #m = 5mm
-CONE_OUTER_WALL_THICKNESS = 0.01 # 1 cm
-
-
-#NOZZLE
-DELTA_V = 200 
-SC_MASS_MAX = 24 
-GAMMA = 1.33
-RA = 8.31446261815324
-M = 18.01528e-3 
-TIME_BURN = 8*3600
-ANGLE_DIVERGENCE = 15 * np.pi / 180 #15 degrees
-NOZZLE_DENSITY = 8190 # inconel
-NOZZLE_ULTIMATE_STRENGTH = 1375e6 #Pa
-NOZZLE_SF = 1.5 
-
+from constants import *
+import matplotlib.pyplot as plt
 
 def check(Tc, Temp_max, cone_Mtotal, ae_at_rat, mass_prop, F, CR, nozzle_Mtotal, collector_Mtotal, tanks_Mtotal):
     if Tc > Temp_max or cone_Mtotal > 12 or ae_at_rat < 1 or mass_prop > 12 or F > 2 or CR > 13000 or nozzle_Mtotal > 12 or collector_Mtotal > 12 or tanks_Mtotal > 12:
         return False
     return True
 
-def dftocsv(df):
-    if os.path.isfile('gridsearch_results.csv'):
-        df.to_csv('gridsearch_results.csv', mode='a', header=False)
-    else:
-        df.to_csv('gridsearch_results.csv', mode='w', header=True)
-###########################
-#ITERATION FOR GRID SEARCH: uncomment this whole thing and uncomment the best values part to run the grid search
-###########################
-# minAT = np.pi * 0.0005**2
-# maxAT = np.pi * 0.05**2
+def dftocsv(df, filename='gridsearch_results.csv'):
+    write_header = not os.path.isfile(filename)
+    df.to_csv(filename, mode='a' if write_header else 'w', header=write_header)
 
-# minAE = np.pi * 0.005**2 
-# maxAE = np.pi * 0.1**2
+def iteration(_at, _ae, _mdot_init):
+    cone_params = default_cone_params.copy()
+    cone_params['mdot'] = _mdot_init
+    
+    cone = Cone(**cone_params)
 
-# AT = np.linspace(minAT, maxAT, 100)
-# AE = np.linspace(minAE, maxAE, 100)
+
+    nozzle_params = default_nozzle_params.copy()
+    nozzle_params['at'] = _at
+    nozzle_params['ae'] = _ae
+    nozzle_params['Tc'] = cone.Tc
+
+    nozzle = Nozzle(**nozzle_params)
+
+    MDOT = 0
+    delta = 0.00000001
+    while abs(MDOT - nozzle.m_dot) > delta:
+        MDOT = nozzle.m_dot
+        cone_params = default_cone_params.copy()
+        cone_params['mdot'] = MDOT
+        cone = Cone(**cone_params)
+
+        nozzle_params = default_nozzle_params.copy()
+        nozzle_params['at'] = _at
+        nozzle_params['ae'] = _ae
+        nozzle_params['Tc'] = cone.Tc
+        nozzle = Nozzle(**nozzle_params)
+
+    
+
+    collector_params = default_collector_params.copy()
+    collector_params['power_to_receiver'] = cone.power_to_prop
+
+    collector = Collector(**collector_params)
+
+
+    INITIAL_GUESS_PRESSURANT_PRESSURE = nozzle.pc + 1
+    BOUNDS = [(nozzle.pc, 300e5)]
+
+    tanks_params = default_tanks_params.copy()
+    tanks_params['propellant_mass'] = nozzle.mp
+    tanks_params['init_guess'] = INITIAL_GUESS_PRESSURANT_PRESSURE
+    tanks_params['bounds'] = BOUNDS
+    tanks_params['pc'] = nozzle.pc
+
+    tanks = Tanks(**tanks_params)
+    return cone, nozzle, collector, tanks
+
+
+###########################
+#ITERATION FOR GRID SEARCH: uncomment this whole thing and comment the best values part to run the grid search
+###########################
+# MIN_AT = np.pi * 0.0005**2
+# MAX_AT = np.pi * 0.05**2
+
+# MIN_AE = np.pi * 0.005**2 
+# MAX_AE = np.pi * 0.1**2
+
+# AT = np.linspace(MIN_AT, MAX_AT, 100)
+# AE = np.linspace(MIN_AE, MAX_AE, 100)
 # min_mass = float('inf')
 # best_values = None
 
 
 # for at in tqdm(AT):
 #     for ae in AE:
-#         cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT_INIT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
-
-#         nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
-
-#         MDOT = 0
-#         delta = 0.00000001
-#         while abs(MDOT - nozzle.m_dot) > delta:
-#             MDOT = nozzle.m_dot
-#             cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
-
-#             nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
-
-#         #TRANSMISSION, COLLECTOR
-#         TRANSMISSION_EFFICIENCY = 0.6
-#         COLLECTOR_NUMBER = 5
-#         TRANSMISSION_DIAMETER = 5 * 760e-6 
-#         SOLAR_FLUX = 1361 
-#         NUMBER_CABLES = 19 
-#         LENGTH_TRANSMISSION = 0.5
-#         TRANSMISSION_DENSITY = 2650
-
-#         collector = Collector(cone.power_to_prop, TRANSMISSION_EFFICIENCY, COLLECTOR_NUMBER, TRANSMISSION_DIAMETER, SOLAR_FLUX, NUMBER_CABLES, LENGTH_TRANSMISSION, TRANSMISSION_DENSITY)
-
-#         # TANKS
-#         WATER_DENSITY = 1000
-#         TANK_YIELD_STRESS = 90e6 
-#         TANK_DENSITY = 2700 
-#         TANK_SF = 2
-#         TANK_RADIUS = 0.05
-#         M_HELIUM = 4.002602e-3 
-#         R_PRESSURANT_SPEC = RA/M_HELIUM
-#         GAMMA_HELIUM = 1.66
-#         INITIAL_GUESS_PRESSURANT_PRESSURE = nozzle.pc + 1
-#         BOUNDS = [(nozzle.pc, 300e5)]
-
-
-#         tanks = Tanks(nozzle.mp, WATER_DENSITY, TANK_YIELD_STRESS, TANK_DENSITY, TANK_SF, TANK_RADIUS, R_PRESSURANT_SPEC, STORAGE_TEMP, GAMMA_HELIUM, INITIAL_GUESS_PRESSURANT_PRESSURE, BOUNDS, nozzle.pc)
-
-
+#         cone, nozzle, collector, tanks = iteration(at, ae, MDOT_INIT)
 
 #         cone_mass_total = cone.mass_total(nozzle.rt)
 #         nozzle_mass_total = nozzle.mass_total()
 #         collector_mass_total = collector.mass_total()
-#         tanks_mass_total = tanks.total_mass()
+#         tanks_mass_total = tanks.total_mass_blow_down(RATIO_BLOW_DOWN)
 #         system_mass = cone_mass_total + nozzle_mass_total + collector_mass_total + tanks_mass_total
-
 
 #         if check(cone.Tc, T_MAX_GRAPHITE, cone_mass_total, nozzle.ae_at_ratio, nozzle.mp, nozzle.F_compl, collector.concentration_ratio, nozzle_mass_total, collector_mass_total, tanks_mass_total):
 #             info = pd.DataFrame([cone.__dict__, nozzle.__dict__, collector.__dict__, tanks.__dict__, {'system_mass': system_mass}])
@@ -118,62 +101,28 @@ def dftocsv(df):
             
 # print(min_mass)
 # print(best_values)
-# print(nozzle.ae_at_ratio)
-# print(np.sqrt(nozzle.ae/np.pi))
-# print(np.sqrt(nozzle.at/np.pi))
-# print(cone.Tc)
+# print(cone_mass_total)
+# print(nozzle_mass_total)
+# print(collector_mass_total)
+# print(tanks_mass_total)
+
+# print(tanks.__dict__)
 
 
+################################
+# BEST VALUES FROM GRID SEARCH: use this in case you do not want to run the whole iteration, but just see the values using the throat and exit areas that give the lowest mass.
+################################
+
+at = 7.853981633974482e-07
+ae = 0.0003950790761332618
 
 
-#################################
-#BEST VALUES FROM GRID SEARCH: use this in case you do not want to run the whole iteration, but just see the values using the throat and exit areas that give the lowest mass.
-#################################
-at = 8.011061266653972e-05
-ae = 0.0029273931544813976
-
-cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT_INIT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
-
-
-nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
-
-MDOT = 0
-delta = 0.00000001
-while abs(MDOT - nozzle.m_dot) > delta:
-    MDOT = nozzle.m_dot
-    cone = Cone(CONE_RADIUS, CONE_LENGTH, CONE_THICKNESS, GRAPHITE_DENSITY, GRAPHITE_C_P, GRAPHITE_THERMAL_CONDUCTIVITY, T_MAX_GRAPHITE, MDOT, STORAGE_TEMP, CHANNEL_THICKNESS, CONE_OUTER_WALL_THICKNESS)
-    nozzle = Nozzle(DELTA_V, SC_MASS_MAX, GAMMA, RA, M, TIME_BURN, at, ae, cone.Tc, ANGLE_DIVERGENCE, NOZZLE_DENSITY, NOZZLE_ULTIMATE_STRENGTH, NOZZLE_SF)
-
-#TRANSMISSION, COLLECTOR
-TRANSMISSION_EFFICIENCY = 0.6
-COLLECTOR_NUMBER = 5
-TRANSMISSION_DIAMETER = 5 * 760e-6 
-SOLAR_FLUX = 1361 
-NUMBER_CABLES = 19 
-LENGTH_TRANSMISSION = 0.5 
-TRANSMISSION_DENSITY = 2650 
-
-collector = Collector(cone.power_to_prop, TRANSMISSION_EFFICIENCY, COLLECTOR_NUMBER, TRANSMISSION_DIAMETER, SOLAR_FLUX, NUMBER_CABLES, LENGTH_TRANSMISSION, TRANSMISSION_DENSITY)
-
-# TANKS
-WATER_DENSITY = 1000 
-TANK_YIELD_STRESS = 90e6 
-TANK_DENSITY = 2700 
-TANK_SF = 2
-TANK_RADIUS = 0.05 
-M_HELIUM = 4.002602e-3 
-R_PRESSURANT_SPEC = RA/M_HELIUM
-GAMMA_HELIUM = 1.66
-INITIAL_GUESS_PRESSURANT_PRESSURE = nozzle.pc + 1
-BOUNDS = [(nozzle.pc, 300e5)]
-
-
-tanks = Tanks(nozzle.mp, WATER_DENSITY, TANK_YIELD_STRESS, TANK_DENSITY, TANK_SF, TANK_RADIUS, R_PRESSURANT_SPEC, STORAGE_TEMP, GAMMA_HELIUM, INITIAL_GUESS_PRESSURANT_PRESSURE, BOUNDS, nozzle.pc)
+cone, nozzle, collector, tanks = iteration(at, ae, MDOT_INIT)
 
 cone_mass_total = cone.mass_total(nozzle.rt)
 nozzle_mass_total = nozzle.mass_total()
 collector_mass_total = collector.mass_total()
-tanks_mass_total = tanks.total_mass()
+tanks_mass_total = tanks.total_mass_blow_down(RATIO_BLOW_DOWN)
 system_mass = cone_mass_total + nozzle_mass_total + collector_mass_total + tanks_mass_total
 
 print(cone.__dict__)
@@ -182,9 +131,21 @@ print(f'{cone.mass_lateral_outer(nozzle.rt)/cone.density=}')
 
 print('\n')
 print(nozzle.__dict__)
+print(f'{nozzle.Ue=}')
+delta = nozzle.pe/nozzle.m_dot * nozzle.ae
+print(f'{delta=}')
+Ueq = nozzle.Ue + delta
+print(f'{Ueq=}')
+print(f'{Ueq/9.81=}')
+difference = delta/nozzle.Ue * 100
+print(f'{difference=}')
+print(nozzle.mass_total())
 
-print(f'{np.sqrt(at/np.pi)=}')
-print(f'{np.sqrt(ae/np.pi)=}')
+radius_throat = np.sqrt(nozzle.at/np.pi)
+radius_exit = np.sqrt(nozzle.ae/np.pi)
+print(f'{radius_throat=}')
+print(f'{radius_exit=}')
+
 
 print('\n')
 print(collector.__dict__)
@@ -200,5 +161,106 @@ c_star = nozzle.pc * nozzle.at / nozzle.m_dot
 
 tau = V_chamber / (nozzle.at * c_star * nozzle.vandenkerckhove**2)
 print(f'{tau=}')
+
+
+tanks_total_vol = tanks.total_volume_blow_down
+print(f'{tanks_total_vol=}')
+cone_vol = np.pi * cone.radius**2 * cone.length * 1/3
+nozzle_vol = np.pi * (radius_exit)**2 * nozzle.length_nozzle * 1/3
+collector_vol = 0.1*0.1*0.05
+
+total_vol_propulsion = tanks_total_vol + cone_vol + nozzle_vol + collector_vol
+print(f'{total_vol_propulsion=}')
+
 print(system_mass)
+
+
+###############################
+#Plots for changing the dimensions of the cone. Uncomment this whole thing to run the plots: note that at and ae need to be specified.
+###############################
+# radius_list = np.linspace(5*TRANSMISSION_DIAMETER, 0.1, 100)
+# length_list = np.linspace(0.025, 0.15, 100)
+# thickness_list = np.linspace(0.001, 0.02, 100)
+# Tc_list = np.zeros(len(radius_list)) 
+
+# for i in range(len(radius_list)):
+#     cone_params = default_cone_params.copy()
+#     cone_params['mdot'] = MDOT_INIT
+#     cone_params['radius'] = radius_list[i]
+    
+#     cone = Cone(**cone_params)
+
+
+#     nozzle_params = default_nozzle_params.copy()
+#     nozzle_params['at'] = at
+#     nozzle_params['ae'] = ae
+#     nozzle_params['Tc'] = cone.Tc
+
+#     nozzle = Nozzle(**nozzle_params)
+
+#     MDOT = 0
+#     delta = 0.00000001
+#     while abs(MDOT - nozzle.m_dot) > delta:
+#         MDOT = nozzle.m_dot
+#         cone_params = default_cone_params.copy()
+#         cone_params['mdot'] = MDOT
+#         cone = Cone(**cone_params)
+
+#         nozzle_params = default_nozzle_params.copy()
+#         nozzle_params['at'] = at
+#         nozzle_params['ae'] = ae
+#         nozzle_params['Tc'] = cone.Tc
+#         nozzle = Nozzle(**nozzle_params)
+    
+#     Tc_list[i] = cone.Tc
+
+# plt.xlabel('Radius [m]')
+# plt.ylabel('$T_c$ [K]')
+# plt.plot(radius_list, Tc_list, label='Tc vs Radius')
+# plt.axvline(x=0.05, color='r', linestyle='--', label='Radius = 0.05')
+# plt.legend()
+# plt.savefig('Tc_vs_Radius.png')
+# # plt.ticklabel_format(useOffset=False)
+# plt.show()
+
+
+# for i in range(len(length_list)):
+#     cone_params = default_cone_params.copy()
+#     cone_params['mdot'] = MDOT_INIT
+#     cone_params['length'] = length_list[i]
+    
+#     cone = Cone(**cone_params)
+
+
+#     nozzle_params = default_nozzle_params.copy()
+#     nozzle_params['at'] = at
+#     nozzle_params['ae'] = ae
+#     nozzle_params['Tc'] = cone.Tc
+
+#     nozzle = Nozzle(**nozzle_params)
+
+#     MDOT = 0
+#     delta = 0.00000001
+#     while abs(MDOT - nozzle.m_dot) > delta:
+#         MDOT = nozzle.m_dot
+#         cone_params = default_cone_params.copy()
+#         cone_params['mdot'] = MDOT
+#         cone = Cone(**cone_params)
+
+#         nozzle_params = default_nozzle_params.copy()
+#         nozzle_params['at'] = at
+#         nozzle_params['ae'] = ae
+#         nozzle_params['Tc'] = cone.Tc
+#         nozzle = Nozzle(**nozzle_params)
+    
+#     Tc_list[i] = cone.Tc
+
+# plt.xlabel('Length [m]')
+# plt.ylabel('$T_c$ [K]')
+# plt.plot(length_list, Tc_list, label='Tc vs Length')
+# plt.axvline(x=0.075, color='r', linestyle='--', label='Length = 0.075')
+# plt.legend()
+# plt.savefig('Tc_vs_Length.png')
+# # plt.ticklabel_format(useOffset=False)
+# plt.show()
 

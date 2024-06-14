@@ -19,7 +19,7 @@ class Nozzle():
         self.ae_at_ratio = self.ae/self.at
 
         
-        self.pe_pc_ratio = fsolve(self.pe_pc_ratio_func, 0.000000001)[0]
+        self.pe_pc_ratio = fsolve(self.pe_pc_ratio_func, 0.0000000001)[0]
 
         self.Ue = np.sqrt((2*self.gamma*self.r*self.Tc/(self.gamma-1)) * (1 - (self.pe_pc_ratio)**((self.gamma-1)/self.gamma)))
         self.mp = self.sc_mass_max  - self.sc_mass_max * (np.exp(-self.delta_v/self.Ue))
@@ -27,7 +27,6 @@ class Nozzle():
         self.pc = self.m_dot * np.sqrt(self.r * self.Tc) / (self.vandenkerckhove * self.at)
         self.pe = self.pe_pc_ratio * self.pc    
 
-        # self.Ue = np.sqrt((2*self.gamma*self.r*self.Tc/(self.gamma-1)) * (1 - (self.pe_pc_ratio)**((self.gamma-1)/self.gamma)))
         self.F_compl = self.m_dot * self.Ue + (self.pe) * self.ae
         self.tbit = 0.2 / self.F_compl  # 200mNs = Ft * tbit
         self.divergence_angle = divergence_angle
@@ -53,6 +52,7 @@ class Nozzle():
 
     def mass_total(self):
         area_lat = self.at * ( (self.ae_at_ratio-1)/np.sin(self.divergence_angle) )
+        self.area_lat_nozzle = area_lat
         radius_throat = np.sqrt(self.at/np.pi)
         radius_exit = np.sqrt(self.ae/np.pi)
         self.length_nozzle = (radius_exit - radius_throat) / np.tan(self.divergence_angle)

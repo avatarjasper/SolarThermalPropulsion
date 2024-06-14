@@ -18,7 +18,6 @@ class Cone():
         
         self.Tc = (self.temp_max + (self.thickness * mdot * self.c_p * storage_temp) / (self.thermal_cond * self.area_lateral)) / (1 + self.thickness * mdot * self.c_p / (self.thermal_cond * self.area_lateral))
         self.power_to_prop = mdot * self.c_p * (self.Tc - storage_temp)
-
     
     def mass_lateral_outer(self, R_t):
         base = self.radius + self.thickness + self.t_channel- R_t
@@ -31,9 +30,6 @@ class Cone():
         self.total_mass_all = self.mass + self.mass_lateral_outer(R_t)
         return self.total_mass_all
     
-    
-
-
     
 
 

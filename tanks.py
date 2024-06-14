@@ -6,6 +6,8 @@ class Tanks():
         self.propellant_mass = propellant_mass
         self.propellant_density = propellant_density
         self.propellant_volume = propellant_mass / (0.9* propellant_density)  # 10 % ullage
+        # R_spec_water = 8.314462 / 0.01801528
+        # self.propellant_volume = propellant_mass * R_spec_water * T_press_initial / pc
 
         self.R_spec_press = R_spec_press
         self.T_press_initial = T_press_initial
@@ -72,12 +74,38 @@ class Tanks():
         self.pressurant_tank_mass = vol*self.tank_density 
         return self.pressurant_tank_mass
     
-    def total_mass(self):
+    def total_mass_regulated(self):
         self.total_mass_propellant_tank()
         self.total_mass_pressurant_tank()
         self.total_mass_all = self.propellant_tank_mass + self.pressurant_tank_mass + self.mass_pressurant + self.propellant_mass
         return self.total_mass_all
     
+
+
+    def total_mass_blow_down(self, _ratio):
+        R = _ratio 
+        pressurant_volume = R * self.propellant_volume - self.propellant_volume
+        total_volume = pressurant_volume + self.propellant_volume
+        self.total_volume_blow_down = total_volume
+        self.pressurant_mass_blow_down = (self.pc * total_volume) / (self.R_spec_press * self.T_press_initial)
+        
+        total_mass_gas_blow_down = self.pressurant_mass_blow_down + self.propellant_mass
+        pressure_init = self.pc*R
+        tank_radius =  ((3/(4* np.pi))  * total_volume)**(1/3)
+        
+        self.tank_radius_blow_down = tank_radius
+
+        thickness = pressure_init * tank_radius / (2 * self.yield_stress)
+        if thickness < 0.001:
+            thickness = 0.001
+        thickness = thickness * self.SF
+        
+        self.thickness_tank_blow_down = thickness  
+        surface_area = 4 * np.pi * tank_radius**2   
+        self.tank_mass_blow_down = surface_area * thickness *self.tank_density
+        self.total_mass_blowdown = self.tank_mass_blow_down + total_mass_gas_blow_down 
+        return self.total_mass_blowdown
+
 
     
     
